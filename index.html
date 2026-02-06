@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>StateScope Ops Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div>
+            <div class="brand-name">StateScope</div>
+            <div class="brand-sub">Forecast staffing and license readiness across every state.</div>
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="ghost">How it works</button>
+          <button class="ghost">Customers</button>
+          <button class="ghost" id="helpButton">Keyboard shortcuts</button>
+          <button class="solid">Get started</button>
+        </div>
+      </header>
+
+      <section class="command-strip">
+        <div class="command-copy">
+          <div class="eyebrow">Staffing Forecast • Compliance • Coverage</div>
+          <h1>90-day staffing clarity across every licensed state.</h1>
+          <p>
+            Upload a roster and demand forecast, then surface the exact gaps, expiring credentials,
+            and next-best actions your ops team can run today.
+          </p>
+        </div>
+        <div class="command-alerts">
+          <div class="alert-pill">
+            <div class="pill-title">Coverage Alert</div>
+            <div class="pill-body">TX demand spikes in 3 weeks with only 1 licensed NP.</div>
+          </div>
+          <div class="alert-pill">
+            <div class="pill-title">Compliance Risk</div>
+            <div class="pill-body">DEA expiring soon in 3 weeks for James Lee, MD.</div>
+          </div>
+          <div class="alert-pill">
+            <div class="pill-title">Verification</div>
+            <div class="pill-body">Registry checks now live for licensed providers.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dashboard-grid">
+        <div class="first-time-banner" id="firstTimeBanner">
+          Upload CSVs to generate your first 90-day brief.
+        </div>
+        <div class="panel panel-upload" id="panel-upload">
+          <div class="panel-header">
+            <div>
+              <h2>Roster upload</h2>
+              <p class="panel-sub">Bring in staff licensing data and clinic demand.</p>
+            </div>
+            <span class="badge">Synthetic data ready</span>
+          </div>
+
+          <div class="upload-grid">
+            <label class="upload-box">
+              <input type="file" id="rosterFile" accept=".csv" />
+              <div class="upload-title">Upload roster CSV</div>
+              <div class="upload-sub">provider name, role, states, license, DEA, NPI</div>
+            </label>
+            <label class="upload-box">
+              <input type="file" id="demandFile" accept=".csv" />
+              <div class="upload-title">Upload demand CSV</div>
+              <div class="upload-sub">state, date, demand count</div>
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button class="solid" id="loadSample">Use sample data</button>
+            <button class="ghost" id="downloadSample">Download sample CSVs</button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Providers</div>
+              <div class="stat-value" id="statProviders">0</div>
+              <div class="stat-note">Active in roster</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Licensed states</div>
+              <div class="stat-value" id="statStates">0</div>
+              <div class="stat-note">Across roster</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Critical expiries</div>
+              <div class="stat-value" id="statCritical">0</div>
+              <div class="stat-note">&lt; 30 days</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Open issues</div>
+              <div class="stat-value" id="statIssues">0</div>
+              <div class="stat-note">Need action</div>
+            </div>
+          </div>
+
+          <div class="preview">
+            <div class="section-title">Roster preview</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Role</th>
+                    <th>States</th>
+                    <th>License expiry</th>
+                    <th>NPI</th>
+                    <th>Verification</th>
+                  </tr>
+                </thead>
+                <tbody id="rosterPreview"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-coverage" id="panel-coverage">
+          <div class="panel-header">
+            <div>
+              <h2>Coverage next 90 days (by state)</h2>
+              <p class="panel-sub">Forecasted demand vs licensed availability.</p>
+            </div>
+            <div class="panel-controls">
+              <label class="control">
+                Sort
+                <select id="coverageSort">
+                  <option value="gap">Highest gap</option>
+                  <option value="soonest">Soonest gap</option>
+                  <option value="state">State A–Z</option>
+                </select>
+              </label>
+              <label class="control">
+                Filter
+                <select id="coverageFilter">
+                  <option value="all">All</option>
+                  <option value="critical">Critical only</option>
+                  <option value="at-risk">At-risk (gaps)</option>
+                  <option value="no-gap">No gaps</option>
+                </select>
+              </label>
+              <span class="chip">Weekly horizon</span>
+            </div>
+          </div>
+
+          <div class="button-row export-row">
+            <button class="ghost" id="exportCoverage">Export coverage gaps</button>
+          </div>
+
+          <div class="panel-scroll coverage-scroll">
+            <div class="empty-state" id="coverageEmpty">
+              Upload roster and demand CSVs to generate coverage forecasts.
+            </div>
+            <div class="coverage-grid" id="coverageGrid"></div>
+
+            <div class="coverage-alerts">
+              <div class="section-title">Undercoverage alerts</div>
+              <div class="alert-list" id="coverageAlerts"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-risk" id="panel-risk">
+          <div class="panel-header">
+            <div>
+              <h2>Risk radar & actions</h2>
+              <p class="panel-sub">Expiry severity, mismatches, and next steps.</p>
+            </div>
+            <div class="chip">Verifier: NPI Registry</div>
+            <div class="chip reliability">
+              <span id="verifierStatus">Live lookup</span>
+            </div>
+            <div class="chip reliability">
+              Last checked: <span id="verifierLastChecked">Updated moments ago</span>
+            </div>
+          </div>
+
+          <div class="button-row export-row">
+            <button class="ghost" id="exportRisk">Download risk report CSV</button>
+            <button class="ghost" id="copyActions">Copy action plan</button>
+            <button class="ghost" id="exportBrief">Export risk brief (PDF)</button>
+          </div>
+
+          <div class="panel-scroll risk-scroll">
+            <div class="loading-row" id="riskLoading" aria-hidden="true">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="loading-text">Processing uploads…</span>
+            </div>
+
+            <div class="empty-state" id="riskEmpty">
+              Upload files to populate risk radar, timeline, issues, and actions.
+            </div>
+
+            <div class="risk-split" id="riskSplit">
+              <div class="risk-column">
+                <div class="urgent-block" id="urgentBlock">
+                  <div class="section-title">Urgent action queue</div>
+                  <div id="urgentList"></div>
+                </div>
+
+                <div class="risk-radar">
+                  <div class="radar-chart" id="radarChart">
+                    <div class="radar-center">
+                      <div class="radar-total" id="radarTotal">0</div>
+                      <div class="radar-label">risk signals</div>
+                    </div>
+                  </div>
+                  <div class="radar-legend">
+                    <div>
+                      <span class="legend-dot critical"></span>
+                      Licenses <strong id="radarLicenses">0</strong>
+                    </div>
+                    <div>
+                      <span class="legend-dot warning"></span>
+                      DEA / NPI <strong id="radarDea">0</strong>
+                    </div>
+                    <div>
+                      <span class="legend-dot ok"></span>
+                      Certs <strong id="radarCerts">0</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="timeline">
+                  <div class="section-title">Expiry timeline</div>
+                  <div id="riskTimeline"></div>
+                </div>
+              </div>
+
+              <div class="risk-column">
+                <div class="issue-block">
+                  <div class="section-title">Issue list</div>
+                  <div id="issueList"></div>
+                </div>
+
+                <div class="action-block">
+                  <div class="section-title">Recommended actions</div>
+                  <div id="actionList"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel evidence-panel evidence" id="evidenceDrawer" aria-hidden="true">
+          <div class="evidence-header">
+            <div>
+              <div class="evidence-title">
+                Evidence <span class="evidence-crumb" id="evidenceBreadcrumb"></span>
+              </div>
+              <div class="evidence-sub" id="evidenceSub">
+                Select an issue to see evidence and recommended actions.
+              </div>
+            </div>
+            <button class="ghost" id="evidenceClose">Clear</button>
+          </div>
+          <div class="evidence-anchor" id="evidenceAnchor">
+            <div class="anchor-row">
+              <span class="anchor-label">Selected</span>
+              <span class="anchor-value" id="anchorSelected">—</span>
+            </div>
+            <div class="anchor-row">
+              <span class="anchor-label">Why it matters</span>
+              <span class="anchor-value" id="anchorWhy">—</span>
+            </div>
+            <div class="anchor-row">
+              <span class="anchor-label" id="anchorTimeLabel">Time to impact</span>
+              <span class="anchor-value" id="anchorTime">—</span>
+            </div>
+          </div>
+          <div class="evidence-action" id="evidenceAction">
+            <div class="evidence-action-text" id="evidenceActionText"></div>
+            <button class="solid" id="evidenceActionBtn" type="button">Take action</button>
+          </div>
+          <div class="evidence-links" id="evidenceLinks"></div>
+          <div class="evidence-body" id="evidenceBody"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal" id="helpModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+        <div class="modal-header">
+          <div>
+            <div class="modal-title" id="helpTitle">Keyboard shortcuts</div>
+            <div class="modal-sub">Use the issue list without leaving the keyboard.</div>
+          </div>
+          <button class="ghost" id="helpClose">Close</button>
+        </div>
+        <div class="modal-body">
+          <div class="shortcut-row">
+            <span class="shortcut-key">↑ / ↓</span>
+            <span>Navigate issues</span>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-key">Enter</span>
+            <span>Open evidence</span>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-key">Space</span>
+            <span>Open evidence</span>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-key">?</span>
+            <span>Open shortcuts</span>
+          </div>
+          <div class="shortcut-row">
+            <span class="shortcut-key">Esc</span>
+            <span>Close evidence or modal</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="toast" id="toast" aria-live="polite" aria-hidden="true"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
